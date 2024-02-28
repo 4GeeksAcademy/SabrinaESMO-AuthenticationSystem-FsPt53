@@ -12,6 +12,10 @@ from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 
+##################################
+import flux_actions
+import flux_dispatcher
+##################################
 
 # from models import Person
 
@@ -36,6 +40,7 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
+
 
 # add the admin
 setup_admin(app)
@@ -62,7 +67,29 @@ def sitemap():
         return generate_sitemap(app)
     return send_from_directory(static_file_dir, 'index.html')
 
-# any other endpoint will try to serve it like a static file
+
+##################################
+
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    try:
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return jsonify({'error': 'Email and password are needed'}), 400
+        
+        flux_dispatcher.dispatch(flux_actions.signup(email, password))
+
+        return jsonify({'message': 'User created'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+if __name__=='__main__':
+    app.run(debug=True)
+
+##################################
 
 
 @app.route('/<path:path>', methods=['GET'])

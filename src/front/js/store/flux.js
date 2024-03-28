@@ -18,7 +18,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 			]
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
 			},
@@ -28,30 +27,33 @@ const getState = ({ getStore, getActions, setStore }) => {
 				if (token && token != "" && token != undefined) setStore({ token: token });
 			},
 
-// /////
 			signup: async (email, password) => {
 				try {
-					const response = await fetch(`https://ominous-goldfish-v6v7pwp9jj9qcwvrq-3001.app.github.dev/api/users`,
-						{
-							method: 'POST',
-							body: JSON.stringify({
-								email: email,
-								password: password
-							}),
-							headers: {
-								"Content-Type": "application/json"
-							}
-						});
-					if (!response.ok) {
-						alert("There has been an error");
-					}
-					const data = await response.json();
-					return data;
+					const res = await fetch("https://ominous-goldfish-v6v7pwp9jj9qcwvrq-3001.app.github.dev/api/users", {
+						method: 'POST',
+						body: JSON.stringify({
+							email: email,
+							password: password
+						}),
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+
+					if (res.status === 200) {
+						alert("Registration success!");
+						return true;
+					} else if (res.status === 401) {
+						const errorData = await res.json();
+						alert(errorData.msg)
+						return false
+					};
 				} catch (error) {
-					console.error("Error creating the user", error);
+					console.error("There has been an error:", error);
+					return false;
 				}
 			},
-// /////
+
 
 			login: async (email, password) => {
 				const options = {
@@ -88,11 +90,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 			getMessage: async () => {
 				try {
-					// fetching data from the backend
 					const resp = await fetch(process.env.BACKEND_URL + "/api/hello")
 					const data = await resp.json()
 					setStore({ message: data.message })
-					// don't forget to return something, that is how the async resolves
 					return data;
 				} catch (error) {
 					console.log("Error loading message from backend", error)
@@ -100,19 +100,13 @@ const getState = ({ getStore, getActions, setStore }) => {
 			},
 
 			changeColor: (index, color) => {
-				//get the store
 				const store = getStore();
-
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
 				const demo = store.demo.map((elm, i) => {
 					if (i === index) elm.background = color;
 					return elm;
 				});
-
-				//reset the global store
 				setStore({ demo: demo });
-			}
+			},
 		}
 	}
 };

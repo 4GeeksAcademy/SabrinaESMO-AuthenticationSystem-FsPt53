@@ -14,7 +14,7 @@ export const Login = () => {
         actions.login(email, password);
     };
 
-    if(store.token && store.token != "" && store.token != undefined) navigate("/");
+    if(store.token && store.token != "" && store.token != undefined) navigate("/demo");
 
     return (
         <div className="text-center mt-5">
